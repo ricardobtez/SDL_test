@@ -2,8 +2,7 @@
 
 [![codecov](https://codecov.io/gh/lefticus/cpp_starter_project/branch/master/graph/badge.svg)](https://codecov.io/gh/lefticus/cpp_starter_project)
 
-
-![CMake](https://github.com/ricardobtez/SDL_test/workflows/.github/workflows/build_cmake.yml/badge.svg?event=push)
+![CMake](https://github.com/ricardobtez/SDL_test/workflows/CMake/badge.svg?event=push)
 
 ## Getting Started
 
