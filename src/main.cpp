@@ -1,45 +1,87 @@
-#include <functional>
+#include <SDL2/SDL.h>
+#include <stdio.h>
+
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+
+
+#include <stdexcept>
+#include <string>
+#include <sstream>
 #include <iostream>
+#include <cstdlib>
 
-#include <spdlog/spdlog.h>
 
 
-#include <docopt/docopt.h>
-
-#include <iostream>
-
-static constexpr auto USAGE =
-  R"(Naval Fate.
-
-    Usage:
-          naval_fate ship new <name>...
-          naval_fate ship <name> move <x> <y> [--speed=<kn>]
-          naval_fate ship shoot <x> <y>
-          naval_fate mine (set|remove) <x> <y> [--moored | --drifting]
-          naval_fate (-h | --help)
-          naval_fate --version
- Options:
-          -h --help     Show this screen.
-          --version     Show version.
-          --speed=<kn>  Speed in knots [default: 10].
-          --moored      Moored (anchored) mine.
-          --drifting    Drifting mine.
-)";
-
-int main(int argc, const char **argv)
+static void check_audio_driver(const char *name)
 {
-  std::map<std::string, docopt::value> args = docopt::docopt(USAGE,
-    { std::next(argv), std::next(argv, argc) },
-    true,// show help if requested
-    "Naval Fate 2.0");// version string
+    std::cout << "checking for audio driver " << name << " ... ";
+    int count = SDL_GetNumAudioDrivers();
 
-  for (auto const &arg : args) {
-    std::cout << arg.first << arg.second << std::endl;
-  }
+    for (int i = 0; i < count; ++i)
+    {
+        if (0 == strcmp(name, SDL_GetAudioDriver(i)))\
+        {
+            std::cout << "found\n";
+            return;
+        }
+    }
+    std::cout << "Not Found :(\n";
+}
+
+static void check_video_driver(const char *name)
+{
+    std::cout << "checking for video driver " << name << " ... ";
+    int count = SDL_GetNumVideoDrivers();
+    for (int i = 0; i < count; ++i)
+    {
+        if (0 == strcmp(name, SDL_GetVideoDriver(i)))
+        {
+            std::cout << "found\n";
+            return;
+        }
+    }
+    std::cout << "Not Found :(\n";
+}
 
 
-  //Use the default logger (stdout, multi-threaded, colored)
-  spdlog::info("Hello, {}!", "World");
+int main()
+{
+    SDL_version v;
+    SDL_GetVersion(&v);
+    std::cout << "SDL version " << int(v.major) << "." << int(v.minor) << "." << int(v.patch) << std::endl;
+    check_video_driver("x11");
+    check_audio_driver("alsa");
+    check_audio_driver("pulseaudio");
+    check_audio_driver("esd");
+    check_audio_driver("arts");
+    check_video_driver("directfb");
+    check_audio_driver("directsound");
 
-  fmt::print("Hello, from {}\n", "{fmt}");
+
+    SDL_Window *window = NULL;
+    SDL_Surface *screenSurface = NULL;
+    //  if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    //    fprintf(stderr, "could not initialize sdl2: %s\n", SDL_GetError());
+    //    return 1;
+    //  }
+    window = SDL_CreateWindow(
+        "hello_sdl2",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        SDL_WINDOW_SHOWN);
+    if (window == NULL)
+    {
+        fprintf(stderr, "could not create window: %s\n", SDL_GetError());
+        return 1;
+    }
+    screenSurface = SDL_GetWindowSurface(window);
+    SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+    SDL_UpdateWindowSurface(window);
+    SDL_Delay(2000);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 0;
 }
